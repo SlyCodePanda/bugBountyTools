@@ -5,12 +5,6 @@ import subprocess
 import sys
 from datetime import datetime
 
-"""
-A basic remote-host port scanner script.
-
-ref: https://www.pythonforbeginners.com/code-snippets-source-code/port-scanner-in-python/
-"""
-
 # Class for changing terminal font colours
 class bcolors:
     HEADER = '\033[95m'
@@ -23,17 +17,65 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+def checkPortResult(p, r, portDesc=None):
+    """
+    Checks the ports and their results, prints to terminal based on result.
+    :param p: Port number.
+    :param r: result of scan (0 = open, 111 = closed)
+    :param portDesc: if this is passed, then it is a common port with a
+                     description of it's default  assignment.
+    :return: N/A
+    """
+    # print "port: ", port
+    # print "result: ", result
+    # print "desc: ", portDesc
+
+    if r == 0 and not portDesc:
+        print "Port {}:         ".format(p) + bcolors.OKGREEN + "Open" + bcolors.ENDC
+
+    elif portDesc:
+        if r == 0:
+            print "Port {} - {}:            ".format(p, portDesc) + bcolors.OKGREEN + "Open" + bcolors.ENDC
+        elif r == 111:
+            print "Port {} - {}:            ".format(p, portDesc) + bcolors.FAIL + "Closed" + bcolors.ENDC
+
+        return None
+
+
+# Dictionary of common ports.
+portsDict = {20: 'FTP Data Transfer',
+             21: 'FTP Command Control',
+             22: 'SSH',
+             23: 'Telnet remote login',
+             25: 'SMTP E-mail routing',
+             53: 'DNS service',
+             67: 'DHCP',
+             68: 'DHCP',
+             80: 'HTTP',
+             110: 'POP3',
+             119: 'NNTP',
+             123: 'NTP',
+             143: 'IMAP',
+             161: 'SNMP',
+             194: 'IRC',
+             443: 'HTTPS'}
+
 # Clear the screen
 subprocess.call('clear', shell=True)
 
 # Ask for input
 remoteServer = raw_input("Enter a remote host to scan: ")
+
+# If 'https://<url>/' was pasted in, strip it down to '<url>'.
+if 'https://' in remoteServer:
+    remoteServer = remoteServer.split('https://')[1].split('/')[0]
+
 remoteServerIP = socket.gethostbyname(remoteServer)
 
 # Print a banner with information on which hose we are about to scan
-print bcolors.OKBLUE + "-" * 60
-print "Please wait, scanning remote host ", remoteServerIP
-print "-" * 60 + bcolors.ENDC
+print bcolors.OKBLUE + "-" * 75
+print "Please wait, scanning remote host        {} - {}".format(remoteServer, remoteServerIP)
+print "-" * 75 + bcolors.ENDC
 
 # Check what time the scan started
 t1 = datetime.now()
@@ -46,21 +88,24 @@ try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = sock.connect_ex((remoteServerIP, port))
 
-        if result == 0:
-            print "Port {}:         ".format(port) + bcolors.OKGREEN + "Open" + bcolors.ENDC
+        # Check if port is in common port dictionary.
+        if port in portsDict.keys():
+            checkPortResult(port, result, portsDict[port])
+        else:
+            checkPortResult(port, result)
 
         sock.close()
 
 except KeyboardInterrupt:
-    print "Interrupted...Quitting..."
+    print bcolors.FAIL + "Interrupted...Quitting..." + bcolors.ENDC
     sys.exit()
 
 except socket.gaierror:
-    print "Hostname could not be resolved. Exiting."
+    print bcolors.FAIL + "Hostname could not be resolved. Exiting." + bcolors.ENDC
     sys.exit()
 
 except socket.error:
-    print "Couldn't connect to server"
+    print bcolors.FAIL + "Couldn't connect to server" + bcolors.ENDC
     sys.exit()
 
 # Check the time again
