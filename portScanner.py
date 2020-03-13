@@ -26,18 +26,15 @@ def checkPortResult(p, r, portDesc=None):
                      description of it's default  assignment.
     :return: N/A
     """
-    # print "port: ", port
-    # print "result: ", result
-    # print "desc: ", portDesc
 
     if r == 0 and not portDesc:
-        print "Port {}:         ".format(p) + bcolors.OKGREEN + "Open" + bcolors.ENDC
+        print "Port {}:         ".format(p) + bcolors.OKGREEN + bcolors.BOLD + "Open" + bcolors.ENDC
 
     elif portDesc:
         if r == 0:
-            print "Port {} - {}:            ".format(p, portDesc) + bcolors.OKGREEN + "Open" + bcolors.ENDC
+            print "Port " + bcolors.BOLD + str(p) + bcolors.ENDC + " - {}:          ".format(portDesc) + bcolors.OKGREEN + bcolors.BOLD + "Open" + bcolors.ENDC
         elif r == 111:
-            print "Port {} - {}:            ".format(p, portDesc) + bcolors.FAIL + "Closed" + bcolors.ENDC
+            print "Port " + bcolors.BOLD + str(p) + bcolors.ENDC + " - {}:          ".format(portDesc) + bcolors.FAIL + "Closed" + bcolors.ENDC
 
         return None
 
